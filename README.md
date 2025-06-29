@@ -11,6 +11,7 @@ A powerful CLI tool for managing Git worktrees with GitHub issues and Claude Cod
 - 📝 **Contextual Documentation** - Auto-generated CLAUDE.md with project info
 - ⚡ **Smart Commands** - Quick access to development commands
 - 👁️ **Progress Monitoring** - Optional overseer worker that tracks progress
+- 🎭 **Coding Agent Archetypes** - Assign specialized roles to multiple workers
 
 ## Prerequisites
 
@@ -174,12 +175,47 @@ worktree rm 42
 # Complex issue requiring collaboration
 worktree open 78 "refactor-api" -w 3
 
+# Skip archetype wizard and use defaults
+worktree open 78 "refactor-api" -w 3 --no-wizard
+
 # Creates 3 Claude instances:
 # - Worker 1: Coordinator, creates task breakdown
-# - Worker 2: Implementation support
-# - Worker 3: Testing and optimization
+# - Worker 2: Select archetype via wizard (or default: Detective)
+# - Worker 3: Select archetype via wizard (or default: Craftsman)
 
 # Workers coordinate through WORKTREE_COORDINATION.md
+```
+
+## Agent Archetypes
+
+When using multiple workers, you can assign specialized roles:
+
+- 🏗️ **The Architect** - System design & architecture patterns
+- 🔍 **The Detective** - Debugging, edge cases & security
+- 🛠️ **The Craftsman** - Code quality & best practices
+- 🚀 **The Explorer** - Innovation & alternative approaches
+- 🎨 **The Aesthete** - Elegant solutions & simplicity
+
+### Interactive Wizard Example
+
+```bash
+$ worktree open 123 -w 3
+
+Creating worktree for issue #123...
+✓ Worker 1 (Coordinator) assigned
+
+Select archetype for Worker 2:
+1) 🏗️  The Architect - System design & architecture
+2) 🔍  The Detective - Debugging & edge cases
+3) 🛠️  The Craftsman - Code quality & best practices
+4) 🚀  The Explorer - Innovation & alternatives
+5) 🎨  The Aesthete - Elegant solutions & simplicity
+Choice (1-5): 2
+
+✓ Worker 2 assigned as The Detective
+
+Select archetype for Worker 3:
+...
 ```
 
 ## Tips
@@ -187,9 +223,12 @@ worktree open 78 "refactor-api" -w 3
 - Run `worktree init` in each repository to customize settings
 - Use descriptive names with `worktree open` for better branch names
 - For complex issues, use `-w` flag to spawn coordinated workers
+- Choose complementary archetypes for better problem-solving coverage
+- Use `--no-wizard` to skip archetype selection and use defaults
 - Multiple Claude instances can work on different aspects of the same issue
 - Both CLAUDE.md and WORKTREE_COORDINATION.md are automatically added to .gitignore
 - Workers communicate through the coordination document to avoid conflicts
+- Add `--watcher` for an overseer that monitors progress
 
 ## License
 

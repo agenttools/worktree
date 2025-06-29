@@ -24,6 +24,11 @@ export async function tldrCommand(): Promise<void> {
   console.log(chalk.gray('\n# Multiple workers for complex issue'));
   console.log('  worktree open 78 -w 3');
   console.log(chalk.dim('  → 3 Claude instances with coordination'));
+  console.log(chalk.dim('  → Interactive wizard to assign archetypes'));
+  
+  console.log(chalk.gray('\n# Skip archetype wizard'));
+  console.log('  worktree open 78 -w 3 --no-wizard');
+  console.log(chalk.dim('  → Uses default archetype assignments'));
   
   console.log(chalk.gray('\n# Add overseer to monitor progress'));
   console.log('  worktree open 78 -w 3 --watcher');
@@ -41,6 +46,7 @@ export async function tldrCommand(): Promise<void> {
   console.log(chalk.yellow('\n💡 Pro Tips:'));
   console.log('  • Use -w flag for complex issues needing multiple workers');
   console.log('  • Workers coordinate through WORKTREE_COORDINATION.md');
+  console.log('  • Choose archetypes for specialized problem-solving roles');
   console.log('  • Add --watcher for an overseer that monitors progress');
   console.log('  • Both "worktree" and "wt" commands work');
   console.log('  • Customize .worktree.yml for project-specific settings');

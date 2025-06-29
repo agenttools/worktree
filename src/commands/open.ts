@@ -9,10 +9,43 @@ import { ConfigManager } from '../lib/config';
 import { generateClaudeMd, ensureGitignore } from '../templates/claude.md';
 import { generateCoordinationMd, generateWorkerPrompt } from '../templates/coordination.md';
 import { generateOverseerMd, generateOverseerPrompt } from '../templates/overseer.md';
+import { ARCHETYPES, Archetype, getDefaultArchetypeForWorker } from '../lib/archetypes';
+import * as readline from 'readline';
 
 interface OpenOptions {
   workers?: string;
   watcher?: boolean;
+  wizard?: boolean;  // Note: --no-wizard sets this to false
+}
+
+async function selectArchetype(workerNumber: number): Promise<Archetype> {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
+  console.log(chalk.cyan(`\nSelect archetype for Worker ${workerNumber}:`));
+  ARCHETYPES.forEach((arch, index) => {
+    console.log(`${index + 1}) ${arch.emoji}  ${arch.name} - ${arch.shortDescription}`);
+  });
+
+  return new Promise((resolve) => {
+    const askQuestion = () => {
+      rl.question(chalk.yellow('Choice (1-5): '), (answer) => {
+        const choice = parseInt(answer);
+        if (choice >= 1 && choice <= 5) {
+          const archetype = ARCHETYPES[choice - 1];
+          console.log(chalk.green(`\n✓ Worker ${workerNumber} assigned as ${archetype.name}\n`));
+          rl.close();
+          resolve(archetype);
+        } else {
+          console.log(chalk.red('Invalid choice. Please select 1-5.'));
+          askQuestion();
+        }
+      });
+    };
+    askQuestion();
+  });
 }
 
 export async function openCommand(issueNumber: string, description?: string, options?: OpenOptions): Promise<void> {
@@ -89,20 +122,8 @@ export async function openCommand(issueNumber: string, description?: string, opt
     writeFileSync(claudePath, claudeContent);
     console.log(chalk.green('✓ Created CLAUDE.md with issue context'));
     
-    // Create WORKTREE_COORDINATION.md if multiple workers
-    if (workerCount > 1) {
-      const coordinationContent = generateCoordinationMd({
-        issueNumber,
-        issueTitle: issue.title,
-        issueBody: issue.body,
-        workerCount,
-        timestamp: new Date().toISOString()
-      });
-      
-      const coordinationPath = path.join(worktreePath, 'WORKTREE_COORDINATION.md');
-      writeFileSync(coordinationPath, coordinationContent);
-      console.log(chalk.green('✓ Created WORKTREE_COORDINATION.md for worker coordination'));
-    }
+    // Store coordination path for later use
+    const coordinationPath = path.join(worktreePath, 'WORKTREE_COORDINATION.md');
     
     // Create OVERSEER.md if watcher option is enabled
     if (options?.watcher) {
@@ -143,6 +164,40 @@ export async function openCommand(issueNumber: string, description?: string, opt
       tmux.launchClaude(windowName, worktreePath, issueNumber);
     } else {
       console.log(chalk.blue(`\nOpening ${workerCount} Claude workers...`));
+      console.log(chalk.green('✓ Worker 1 (Coordinator) assigned\n'));
+      
+      // Store selected archetypes for coordination file
+      const workerArchetypes: { [key: number]: Archetype } = {};
+      
+      // Get archetypes for workers 2+
+      if (options?.wizard !== false && workerCount > 1) {
+        // Interactive wizard mode
+        for (let i = 2; i <= workerCount; i++) {
+          workerArchetypes[i] = await selectArchetype(i);
+        }
+      } else if (workerCount > 1) {
+        // No-wizard mode: use defaults
+        console.log(chalk.gray('Using default archetype assignments...\n'));
+        for (let i = 2; i <= workerCount; i++) {
+          workerArchetypes[i] = getDefaultArchetypeForWorker(i);
+          console.log(chalk.green(`✓ Worker ${i} assigned as ${workerArchetypes[i].name}\n`));
+        }
+      }
+      
+      // Create/update coordination file with archetypes
+      if (workerCount > 1) {
+        const coordinationContent = generateCoordinationMd({
+          issueNumber,
+          issueTitle: issue.title,
+          issueBody: issue.body,
+          workerCount,
+          timestamp: new Date().toISOString(),
+          workerArchetypes
+        });
+        
+        writeFileSync(coordinationPath, coordinationContent);
+        console.log(chalk.green('✓ Created WORKTREE_COORDINATION.md with worker archetypes'));
+      }
       
       // Launch first worker in main window
       tmux.launchClaudeWithPrompt(
@@ -155,10 +210,11 @@ export async function openCommand(issueNumber: string, description?: string, opt
       for (let i = 2; i <= workerCount; i++) {
         await new Promise(resolve => setTimeout(resolve, 1000)); // Small delay between splits
         const vertical = i % 2 === 0; // Alternate between horizontal and vertical splits
+        const archetype = workerArchetypes[i];
         tmux.launchClaudeInPaneWithPrompt(
           windowName,
           worktreePath,
-          generateWorkerPrompt(i, workerCount, issueNumber),
+          generateWorkerPrompt(i, workerCount, issueNumber, archetype),
           vertical,
           i
         );
