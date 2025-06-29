@@ -161,6 +161,9 @@ export async function openCommand(issueNumber: string, description?: string, opt
     // Launch Claude workers
     if (workerCount === 1) {
       console.log(chalk.blue('\nOpening Claude Code...'));
+      const singleWorkerPrompt = `Solve the issue described in CLAUDE.md`;
+      console.log(chalk.gray('\nPrompt:'));
+      console.log(chalk.gray(singleWorkerPrompt));
       tmux.launchClaude(windowName, worktreePath, issueNumber);
     } else {
       console.log(chalk.blue(`\nOpening ${workerCount} Claude workers...`));
@@ -200,10 +203,13 @@ export async function openCommand(issueNumber: string, description?: string, opt
       }
       
       // Launch first worker in main window
+      const worker1Prompt = generateWorkerPrompt(1, workerCount, issueNumber);
+      console.log(chalk.gray('\nWorker 1 prompt:'));
+      console.log(chalk.gray(worker1Prompt));
       tmux.launchClaudeWithPrompt(
         windowName, 
         worktreePath, 
-        generateWorkerPrompt(1, workerCount, issueNumber)
+        worker1Prompt
       );
       
       // Launch additional workers in split panes
@@ -211,10 +217,13 @@ export async function openCommand(issueNumber: string, description?: string, opt
         await new Promise(resolve => setTimeout(resolve, 1000)); // Small delay between splits
         const vertical = i % 2 === 0; // Alternate between horizontal and vertical splits
         const archetype = workerArchetypes[i];
+        const workerPrompt = generateWorkerPrompt(i, workerCount, issueNumber, archetype);
+        console.log(chalk.gray(`\nWorker ${i} prompt:`));
+        console.log(chalk.gray(workerPrompt));
         tmux.launchClaudeInPaneWithPrompt(
           windowName,
           worktreePath,
-          generateWorkerPrompt(i, workerCount, issueNumber, archetype),
+          workerPrompt,
           vertical,
           i
         );
@@ -227,10 +236,13 @@ export async function openCommand(issueNumber: string, description?: string, opt
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Always use vertical split for the watcher to keep it separate
+      const overseerPrompt = generateOverseerPrompt(issueNumber);
+      console.log(chalk.gray('\nOverseer prompt:'));
+      console.log(chalk.gray(overseerPrompt));
       tmux.launchClaudeInPaneWithPrompt(
         windowName,
         worktreePath,
-        generateOverseerPrompt(issueNumber),
+        overseerPrompt,
         true,  // vertical split
         0      // Special worker number 0 for overseer
       );
