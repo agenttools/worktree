@@ -35,7 +35,7 @@ async function selectArchetype(workerNumber: number): Promise<Archetype> {
         const choice = parseInt(answer);
         if (choice >= 1 && choice <= 5) {
           const archetype = ARCHETYPES[choice - 1];
-          console.log(chalk.green(`\n✓ Worker ${workerNumber} assigned as ${archetype.name}\n`));
+          console.log(chalk.green(`✓ Worker ${workerNumber} assigned as ${archetype.name}`));
           rl.close();
           resolve(archetype);
         } else {
@@ -167,7 +167,6 @@ export async function openCommand(issueNumber: string, description?: string, opt
       tmux.launchClaude(windowName, worktreePath, issueNumber);
     } else {
       console.log(chalk.blue(`\nOpening ${workerCount} Claude workers...`));
-      console.log(chalk.green('✓ Worker 1 (Coordinator) assigned\n'));
       
       // Store selected archetypes for coordination file
       const workerArchetypes: { [key: number]: Archetype } = {};
@@ -183,7 +182,7 @@ export async function openCommand(issueNumber: string, description?: string, opt
         console.log(chalk.gray('Using default archetype assignments...\n'));
         for (let i = 2; i <= workerCount; i++) {
           workerArchetypes[i] = getDefaultArchetypeForWorker(i);
-          console.log(chalk.green(`✓ Worker ${i} assigned as ${workerArchetypes[i].name}\n`));
+          console.log(chalk.green(`✓ Worker ${i} assigned as ${workerArchetypes[i].name}`));
         }
       }
       
