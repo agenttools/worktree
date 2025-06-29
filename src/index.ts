@@ -13,7 +13,7 @@ const program = new Command();
 program
   .name('worktree')
   .description('CLI tool for managing Git worktrees with GitHub issues and Claude Code integration')
-  .version('0.3.1');
+  .version('0.4.0');
 
 program
   .command('open <issue-number> [description]')
