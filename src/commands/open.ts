@@ -144,7 +144,8 @@ export async function openCommand(issueNumber: string, description?: string, opt
           windowName,
           worktreePath,
           generateWorkerPrompt(i, workerCount, issueNumber),
-          vertical
+          vertical,
+          i
         );
       }
     }

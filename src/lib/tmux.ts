@@ -70,23 +70,33 @@ export class TmuxOperations {
     }
   }
 
-  createWindow(windowName: string, workingDirectory: string): number {
+  createWindow(windowName: string, workingDirectory: string): { windowIndex: number; firstPaneId: string } {
+    let firstPaneId: string;
+    
     if (!this.hasSession()) {
-      // Create session with first window
-      this.exec(
-        `tmux new-session -d -s "${this.sessionName}" -n "${windowName}" -c "${workingDirectory}"`
+      // Create session with first window and capture pane ID
+      const output = this.exec(
+        `tmux new-session -d -s "${this.sessionName}" -n "${windowName}" -c "${workingDirectory}" -P -F "#{pane_id}"`
       );
+      firstPaneId = output.trim();
     } else if (!this.hasWindow(windowName)) {
-      // Add window to existing session
-      this.exec(
-        `tmux new-window -t "${this.sessionName}" -n "${windowName}" -c "${workingDirectory}"`
+      // Add window to existing session and capture pane ID
+      const output = this.exec(
+        `tmux new-window -t "${this.sessionName}" -n "${windowName}" -c "${workingDirectory}" -P -F "#{pane_id}"`
       );
+      firstPaneId = output.trim();
+    } else {
+      // Window already exists, get first pane ID
+      const output = this.exec(
+        `tmux list-panes -t "${this.sessionName}:${windowName}" -F "#{pane_id}" | head -1`
+      );
+      firstPaneId = output.trim();
     }
 
     // Get window index
     const windows = this.listWindows();
     const window = windows.find(w => w.name === windowName);
-    return window?.index ?? 0;
+    return { windowIndex: window?.index ?? 0, firstPaneId };
   }
 
   switchToWindow(windowName: string): void {
@@ -131,39 +141,36 @@ export class TmuxOperations {
   }
 
   launchClaude(windowName: string, workingDirectory: string, _issueNumber: string): void {
-    this.createWindow(windowName, workingDirectory);
+    const { firstPaneId } = this.createWindow(windowName, workingDirectory);
     
-    // Launch claude in the window
-    this.sendKeys(`${this.sessionName}:${windowName}`, 'claude');
-    this.sendEnter(`${this.sessionName}:${windowName}`);
+    // Launch claude in the specific pane
+    this.sendKeys(firstPaneId, 'claude');
+    this.sendEnter(firstPaneId);
     
     // Wait for Claude to initialize
     console.log(chalk.gray('Waiting for Claude to initialize...'));
     setTimeout(() => {
-      // Send the solve command
-      this.sendKeys(
-        `${this.sessionName}:${windowName}`, 
-        'Solve the issue described in CLAUDE.md'
-      );
-      this.sendEnter(`${this.sessionName}:${windowName}`);
+      // Send the solve command to the specific pane
+      this.sendKeys(firstPaneId, 'Solve the issue described in CLAUDE.md');
+      this.sendEnter(firstPaneId);
       console.log(chalk.green('✓ Sent solve command to Claude'));
     }, 5000);
   }
 
   launchClaudeWithPrompt(windowName: string, workingDirectory: string, prompt: string): void {
-    this.createWindow(windowName, workingDirectory);
+    const { firstPaneId } = this.createWindow(windowName, workingDirectory);
     
-    // Launch claude in the window
-    this.sendKeys(`${this.sessionName}:${windowName}`, 'claude');
-    this.sendEnter(`${this.sessionName}:${windowName}`);
+    // Launch claude in the specific pane
+    this.sendKeys(firstPaneId, 'claude');
+    this.sendEnter(firstPaneId);
     
     // Wait for Claude to initialize
     console.log(chalk.gray('Waiting for Claude to initialize...'));
     setTimeout(() => {
-      // Send the custom prompt
-      this.sendKeys(`${this.sessionName}:${windowName}`, prompt);
-      this.sendEnter(`${this.sessionName}:${windowName}`);
-      console.log(chalk.green('✓ Sent prompt to Claude'));
+      // Send the custom prompt to the specific pane
+      this.sendKeys(firstPaneId, prompt);
+      this.sendEnter(firstPaneId);
+      console.log(chalk.green('✓ Sent prompt to Claude (Worker 1)'));
     }, 5000);
   }
 
@@ -193,7 +200,8 @@ export class TmuxOperations {
     windowName: string,
     workingDirectory: string,
     prompt: string,
-    vertical: boolean = false
+    vertical: boolean = false,
+    workerNumber?: number
   ): void {
     const paneId = this.splitPane(windowName, workingDirectory, vertical);
     
@@ -207,7 +215,8 @@ export class TmuxOperations {
       // Send the custom prompt
       this.sendKeys(paneId, prompt);
       this.sendEnter(paneId);
-      console.log(chalk.green('✓ Sent prompt to Claude'));
+      const workerInfo = workerNumber ? ` (Worker ${workerNumber})` : '';
+      console.log(chalk.green(`✓ Sent prompt to Claude${workerInfo}`));
     }, 5000);
   }
 
