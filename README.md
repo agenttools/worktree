@@ -10,6 +10,7 @@ A powerful CLI tool for managing Git worktrees with GitHub issues and Claude Cod
 - 🖥️ **tmux Session Management** - Organized windows and panes per issue
 - 📝 **Contextual Documentation** - Auto-generated CLAUDE.md with project info
 - ⚡ **Smart Commands** - Quick access to development commands
+- 👁️ **Progress Monitoring** - Optional overseer worker that tracks progress
 
 ## Prerequisites
 
@@ -60,6 +61,14 @@ worktree open 123 "add-authentication"
 # With multiple Claude workers (2-5)
 worktree open 123 -w 3
 # Spawns 3 Claude instances with coordination
+
+# With an overseer worker
+worktree open 123 --watcher
+# Adds an overseer that monitors progress every 60 seconds
+
+# Combine multiple workers with overseer
+worktree open 123 -w 3 --watcher
+# 3 workers + 1 overseer monitoring them
 ```
 
 ### Split Pane
@@ -129,6 +138,7 @@ setup_commands:
 4. **Generates context files**:
    - **CLAUDE.md** - Issue details and project context for all workers
    - **WORKTREE_COORDINATION.md** - Task coordination for multi-worker setups
+   - **OVERSEER.md** - Progress tracking and recommendations (when --watcher used)
 5. **Launches Claude Code** - In tmux window/pane with working directory set
 6. **Auto-sends prompts**:
    - Single worker: "Solve the issue described in CLAUDE.md"

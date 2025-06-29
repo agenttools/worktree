@@ -13,12 +13,13 @@ const program = new Command();
 program
   .name('worktree')
   .description('CLI tool for managing Git worktrees with GitHub issues and Claude Code integration')
-  .version('0.2.2');
+  .version('0.3.0');
 
 program
   .command('open <issue-number> [description]')
   .description('Create or switch to a worktree for a GitHub issue')
   .option('-w, --workers <number>', 'Number of Claude workers to spawn (default: 1)', '1')
+  .option('--watcher', 'Spawn an additional overseer worker to monitor progress')
   .action(openCommand);
 
 program

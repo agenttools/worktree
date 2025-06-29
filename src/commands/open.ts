@@ -8,9 +8,11 @@ import { TmuxOperations } from '../lib/tmux';
 import { ConfigManager } from '../lib/config';
 import { generateClaudeMd, ensureGitignore } from '../templates/claude.md';
 import { generateCoordinationMd, generateWorkerPrompt } from '../templates/coordination.md';
+import { generateOverseerMd, generateOverseerPrompt } from '../templates/overseer.md';
 
 interface OpenOptions {
   workers?: string;
+  watcher?: boolean;
 }
 
 export async function openCommand(issueNumber: string, description?: string, options?: OpenOptions): Promise<void> {
@@ -102,9 +104,22 @@ export async function openCommand(issueNumber: string, description?: string, opt
       console.log(chalk.green('✓ Created WORKTREE_COORDINATION.md for worker coordination'));
     }
     
-    // Ensure CLAUDE.md and WORKTREE_COORDINATION.md are in .gitignore
+    // Create OVERSEER.md if watcher option is enabled
+    if (options?.watcher) {
+      const overseerContent = generateOverseerMd({
+        issueNumber,
+        issueTitle: issue.title,
+        timestamp: new Date().toISOString()
+      });
+      
+      const overseerPath = path.join(worktreePath, 'OVERSEER.md');
+      writeFileSync(overseerPath, overseerContent);
+      console.log(chalk.green('✓ Created OVERSEER.md for progress monitoring'));
+    }
+    
+    // Ensure CLAUDE.md, WORKTREE_COORDINATION.md, and OVERSEER.md are in .gitignore
     ensureGitignore(worktreePath);
-    console.log(chalk.green('✓ Added CLAUDE.md to .gitignore'));
+    console.log(chalk.green('✓ Added context files to .gitignore'));
     
     // Run setup commands if any
     const setupCommands = config.getSetupCommands();
@@ -148,6 +163,21 @@ export async function openCommand(issueNumber: string, description?: string, opt
           i
         );
       }
+    }
+    
+    // Launch watcher if requested
+    if (options?.watcher) {
+      console.log(chalk.blue('\nSpawning Overseer worker...'));
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Always use vertical split for the watcher to keep it separate
+      tmux.launchClaudeInPaneWithPrompt(
+        windowName,
+        worktreePath,
+        generateOverseerPrompt(issueNumber),
+        true,  // vertical split
+        0      // Special worker number 0 for overseer
+      );
     }
     
     // Open iTerm

@@ -226,7 +226,7 @@ export class TmuxOperations {
       // Wait a second before sending enter
       setTimeout(() => {
         this.sendEnter(paneId);
-        const workerInfo = workerNumber ? ` (Worker ${workerNumber})` : '';
+        const workerInfo = workerNumber === 0 ? ' (Overseer)' : workerNumber ? ` (Worker ${workerNumber})` : '';
         console.log(chalk.green(`✓ Sent prompt to Claude${workerInfo}`));
       }, 1000);
     }, 5000);

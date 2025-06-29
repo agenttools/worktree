@@ -143,6 +143,20 @@ CLAUDE.md
     }
     
     gitignoreContent += 'WORKTREE_COORDINATION.md\n';
+    updated = true;
+  }
+  
+  // Check if OVERSEER.md is already in .gitignore
+  if (!gitignoreContent.includes('OVERSEER.md')) {
+    if (!updated && gitignoreContent && !gitignoreContent.endsWith('\n')) {
+      gitignoreContent += '\n';
+    }
+    
+    if (!updated) {
+      gitignoreContent += '\n# claude code worktree context\n';
+    }
+    
+    gitignoreContent += 'OVERSEER.md\n';
   }
   
   fs.writeFileSync(gitignorePath, gitignoreContent);
