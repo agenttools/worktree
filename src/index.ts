@@ -6,13 +6,14 @@ import { splitCommand } from './commands/split';
 import { listCommand } from './commands/list';
 import { removeCommand } from './commands/remove';
 import { initCommand } from './commands/init';
+import { tldrCommand } from './commands/tldr';
 
 const program = new Command();
 
 program
   .name('worktree')
   .description('CLI tool for managing Git worktrees with GitHub issues and Claude Code integration')
-  .version('0.1.1');
+  .version('0.2.0');
 
 program
   .command('open <issue-number> [description]')
@@ -42,6 +43,11 @@ program
   .command('init')
   .description('Initialize worktree configuration for current repository')
   .action(initCommand);
+
+program
+  .command('tldr')
+  .description('Show quick examples and common usage patterns')
+  .action(tldrCommand);
 
 program.parse(process.argv);
 
