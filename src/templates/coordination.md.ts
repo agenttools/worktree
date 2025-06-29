@@ -105,31 +105,8 @@ Remember: Coordinate through this document to avoid conflicts and ensure efficie
 
 export function generateWorkerPrompt(workerNumber: number, totalWorkers: number, issueNumber: string): string {
   if (workerNumber === 1) {
-    return `You are Worker 1 (Coordinator) of ${totalWorkers} Claude workers collaborating on issue #${issueNumber}.
-
-Your primary responsibilities:
-1. Read and understand the issue in CLAUDE.md
-2. Create a task breakdown in WORKTREE_COORDINATION.md
-3. Begin implementing the core functionality
-4. Assign tasks to other workers via the coordination document
-
-Start by:
-1. Analyzing the issue requirements
-2. Updating WORKTREE_COORDINATION.md with specific tasks
-3. Beginning the implementation
-
-The other workers are waiting for your task assignments.`;
+    return `You are Worker 1 (Coordinator) of ${totalWorkers} Claude workers on issue #${issueNumber}. Read CLAUDE.md, create task breakdown in WORKTREE_COORDINATION.md, and begin implementation. Other workers are waiting for your task assignments.`;
   } else {
-    return `You are Worker ${workerNumber} of ${totalWorkers} Claude workers collaborating on issue #${issueNumber}.
-
-Your role: ${workerNumber === 2 ? 'Supporting implementation and testing' : 'Quality assurance and optimization'}
-
-Start by:
-1. Reading CLAUDE.md to understand the issue
-2. Checking WORKTREE_COORDINATION.md for task assignments
-3. Waiting briefly for Worker 1 to update the task list
-4. Claiming and working on assigned tasks
-
-Worker 1 is currently analyzing the issue and will assign specific tasks shortly. Begin building your understanding of the requirements while waiting.`;
+    return `You are Worker ${workerNumber} of ${totalWorkers} Claude workers on issue #${issueNumber}. First, check if WORKTREE_COORDINATION.md exists - if not, wait and check again every 20 seconds until it's created by Worker 1. Once available, read it along with CLAUDE.md to understand your tasks. Your role: ${workerNumber === 2 ? 'Supporting implementation and testing' : 'Quality assurance and optimization'}.`;
   }
 }

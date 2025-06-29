@@ -152,8 +152,11 @@ export class TmuxOperations {
     setTimeout(() => {
       // Send the solve command to the specific pane
       this.sendKeys(firstPaneId, 'Solve the issue described in CLAUDE.md');
-      this.sendEnter(firstPaneId);
-      console.log(chalk.green('✓ Sent solve command to Claude'));
+      // Wait a second before sending enter
+      setTimeout(() => {
+        this.sendEnter(firstPaneId);
+        console.log(chalk.green('✓ Sent solve command to Claude'));
+      }, 1000);
     }, 5000);
   }
 
@@ -169,8 +172,11 @@ export class TmuxOperations {
     setTimeout(() => {
       // Send the custom prompt to the specific pane
       this.sendKeys(firstPaneId, prompt);
-      this.sendEnter(firstPaneId);
-      console.log(chalk.green('✓ Sent prompt to Claude (Worker 1)'));
+      // Wait a second before sending enter
+      setTimeout(() => {
+        this.sendEnter(firstPaneId);
+        console.log(chalk.green('✓ Sent prompt to Claude (Worker 1)'));
+      }, 1000);
     }, 5000);
   }
 
@@ -191,8 +197,11 @@ export class TmuxOperations {
     setTimeout(() => {
       // Send the solve command
       this.sendKeys(paneId, 'Solve the issue described in CLAUDE.md');
-      this.sendEnter(paneId);
-      console.log(chalk.green('✓ Sent solve command to Claude'));
+      // Wait a second before sending enter
+      setTimeout(() => {
+        this.sendEnter(paneId);
+        console.log(chalk.green('✓ Sent solve command to Claude'));
+      }, 1000);
     }, 5000);
   }
 
@@ -214,9 +223,12 @@ export class TmuxOperations {
     setTimeout(() => {
       // Send the custom prompt
       this.sendKeys(paneId, prompt);
-      this.sendEnter(paneId);
-      const workerInfo = workerNumber ? ` (Worker ${workerNumber})` : '';
-      console.log(chalk.green(`✓ Sent prompt to Claude${workerInfo}`));
+      // Wait a second before sending enter
+      setTimeout(() => {
+        this.sendEnter(paneId);
+        const workerInfo = workerNumber ? ` (Worker ${workerNumber})` : '';
+        console.log(chalk.green(`✓ Sent prompt to Claude${workerInfo}`));
+      }, 1000);
     }, 5000);
   }
 
