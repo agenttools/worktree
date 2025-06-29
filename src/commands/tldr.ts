@@ -25,6 +25,10 @@ export async function tldrCommand(): Promise<void> {
   console.log('  worktree open 78 -w 3');
   console.log(chalk.dim('  → 3 Claude instances with coordination'));
   
+  console.log(chalk.gray('\n# Add overseer to monitor progress'));
+  console.log('  worktree open 78 -w 3 --watcher');
+  console.log(chalk.dim('  → 3 workers + 1 overseer tracking progress'));
+  
   console.log(chalk.gray('\n# Add another Claude to existing issue'));
   console.log('  worktree split 42');
   
@@ -37,6 +41,7 @@ export async function tldrCommand(): Promise<void> {
   console.log(chalk.yellow('\n💡 Pro Tips:'));
   console.log('  • Use -w flag for complex issues needing multiple workers');
   console.log('  • Workers coordinate through WORKTREE_COORDINATION.md');
+  console.log('  • Add --watcher for an overseer that monitors progress');
   console.log('  • Both "worktree" and "wt" commands work');
   console.log('  • Customize .worktree.yml for project-specific settings');
   
